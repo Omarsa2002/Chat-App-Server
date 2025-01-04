@@ -59,7 +59,7 @@ const signUpUser=async(req,res,next)=>{
             const info= sendConfirmEmail(newUser.email,code,subject)
             if (info) {
                 const savedUser = await newUser.save();
-                sendResponse(res,constants.RESPONSE_CREATED,"Your signup was completed successfully! ",savedUser.userId,{});
+                sendResponse(res,constants.RESPONSE_CREATED,"Your signup was completed successfully! ",{},{});
             }else {
                 sendResponse(res,constants.RESPONSE_BAD_REQUEST,"rejected Eamil", [], []);
             }
@@ -136,7 +136,7 @@ const login = async (req, res, next)=>{
             await user.save()
             // await Model.findOneAndUpdate({ email: user.email },{ $set: { verificationCode: code, verificationCodeDate: currentDate(Date.now())}});
             await sendConfirmEmail(user.email, code, 'Confirmation Email - Chat Application');
-            return sendResponse(res, constants.RESPONSE_FORBIDDEN, "Please activate your email first.", {}, [])
+            return sendResponse(res, constants.RESPONSE_FORBIDDEN, "Please activate your email first.", {activateEmail:false}, [])
         }
         const userId = (user.userId)?  user.userId: user.companyId;
         const accToken = await jwtGenerator({ userId: userId, role:user.role }, 24, "h");

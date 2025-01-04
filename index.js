@@ -93,7 +93,7 @@ routes.v1routes(app)
 // addAdmin()
 
 app.use('/', function(req, res){
-	res.status(400).json({message:"Luxi API Server"})
+	res.status(400).json({message:"ChatApp API Server"})
 });
 
 
