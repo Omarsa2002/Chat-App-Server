@@ -36,8 +36,12 @@ const userSchema=new mongoose.Schema({
         enum : ['system'],
         defult: "system"
     },
-    isOnline:Boolean,
+    isOnline:{
+        type:Boolean,
+        default: false
+    },
     friends:[String],
+    friendsRequests:[String],
     groubs:[String]
 },{
     timestamps: true
