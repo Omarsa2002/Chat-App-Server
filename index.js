@@ -47,7 +47,10 @@ console.log("Environment:", CONFIG.app)
 connectiondb()
 
 // CORS
-app.use(cors());
+app.use(cors({
+    origin: CONFIG.CLINT_ORIGIN,
+    credentials: true,
+}));
 app.use(helmet())
 
 

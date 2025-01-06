@@ -34,18 +34,27 @@ const userSchema=new mongoose.Schema({
     accountType:{
         type: String,
         enum : ['system'],
-        defult: "system"
+        default: 'system',
     },
     isOnline:{
         type:Boolean,
         default: false
     },
-    friends:[String],
-    friendsRequests:[String],
+    friends:[{
+        userId:{ type: String, ref: 'User' },
+        addedAt: { type: Date, default: Date.now },
+    }],
+    friendsRequests:[{
+        userId:{ type: String, ref: 'User' },
+        requestedAt: { type: Date, default: Date.now },
+    }],
     groubs:[String]
 },{
     timestamps: true
 })
+
+userSchema.index({ 'friends.userId': 1 });
+userSchema.index({ 'friendsRequests.userId': 1 });
 
 userSchema.plugin(addPrefixedIdPlugin, { prefix: 'User', field: 'userId' }); 
 
@@ -60,14 +69,18 @@ userSchema.virtual('password')
 
 userSchema.pre('save', async function (next) {
     if (this.password) {         
-        this.encryptedPassword =  bcrypt.hashSync(this.password, parseInt(CONFIG.BCRYPT_SALT));  
+        try {
+            this.encryptedPassword = await bcrypt.hash(this.password, parseInt(CONFIG.BCRYPT_SALT));
+        } catch (error) {
+            return next(error);
+        }
     }
     next();
 });
 
 // Password comparison method
-userSchema.methods.comparePassword = function(password) {
-    return bcrypt.compareSync(password, this.encryptedPassword);
+userSchema.methods.comparePassword = async function(password) {
+    return await bcrypt.compare(password, this.encryptedPassword);
 };
 
 const userModel = mongoose.model('User', userSchema);
