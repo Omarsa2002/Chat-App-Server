@@ -66,6 +66,29 @@ const userDetailsQuery = (userId)=>{
                         },
                     },
                 ],
+                requestedFriends:[
+                    { $unwind: "$requestedFriends" },
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "requestedFriends.userId",
+                            foreignField: "userId",
+                            as: "requestedFriendsDetails",
+                        },
+                    },
+                    { $unwind: "$requestedFriendsDetails" },
+                    {
+                        $group: {
+                            _id: null,
+                            requestedFriends: {
+                                $push: {
+                                    requestedId: "$requestedFriendsDetails.userId",
+                                    requestedName: "$requestedFriendsDetails.userName",
+                                },
+                            },
+                        },
+                    },
+                ],
             }
         },
         {
@@ -74,7 +97,9 @@ const userDetailsQuery = (userId)=>{
                 friendsDetails:{$arrayElemAt:["$friends.friends",0]},
                 friendsCount: { $size: { $ifNull: ["$friends.friends", []] } },
                 friendsRequestsDetails:{$arrayElemAt:["$friendsRequests.friendsRequests",0]},
-                friendsRequestsCount: { $size: { $ifNull: ["$friendsRequests.friendsRequests", []] } }
+                friendsRequestsCount: { $size: { $ifNull: ["$friendsRequests.friendsRequests", []] } },
+                requestedFriendsDetails:{$arrayElemAt:["$requestedFriends.requestedFriends",0]},
+                requestedFriendsCount: { $size: { $ifNull: ["$requestedFriends.requestedFriends", []] } }
             }
         }
     ]
