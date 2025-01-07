@@ -15,7 +15,7 @@ router.post("/verifyemail", validation(validators.verifyEmail), authRoute.verify
 router.post("/resendcode", validation(validators.resendCode), authRoute.resendCode)
 router.post("/login", validation(validators.login), authRoute.login)
 router.post("/forgetpassword", validation(validators.forgetPassword), authRoute.forgetPassword)
-router.put("/setPassword", validation(validators.setPassword), authRoute.setPassword);
+router.patch("/setPassword", validation(validators.setPassword), authRoute.setPassword);
 router.post("/logout", authGuard, authRoute.signOut)
 
 

@@ -12,8 +12,11 @@ const authGuard = passport.authenticate("appAuth", { session: false });
 
 router.get('/userdata', authGuard, userRoute.userData);
 router.get('/users', authGuard, validation(validators.users), userRoute.users);
-router.put('/sendfriendrequest', authGuard, userRoute.sendFriendRequest)
-router.put('/acceptfriendrequest', authGuard, userRoute.acceptFriendRequest)
+router.patch('/sendfriendrequest', authGuard, userRoute.sendFriendRequest)
+router.patch('/acceptfriendrequest', authGuard, userRoute.acceptFriendRequest)
+router.patch('/cancelfriendrequest', authGuard, userRoute.cancelFriendRequest)
+router.patch('/refusefriendrequest', authGuard, userRoute.refuseFriendRequest)
+router.patch('/removefriend', authGuard, userRoute.removeFriend)
 
 
 module.exports = router
