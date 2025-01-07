@@ -7,9 +7,10 @@ const aggrrgateQuery = require('./user.aggregateQuery.js')
 
 const users = async (req, res, next)=>{
     try{
+        const {userId} = req.user
         const {skip, size} = req.query
         const { limit, offset } = paginationWrapper(skip, size);
-        const users = await userModel.find({activateEmail:true}).select('-_id userId userName isOnline').skip(offset).limit(limit);
+        const users = await userModel.find({activateEmail:true, userId:{ $ne: userId }}).select('-_id userId userName isOnline').skip(offset).limit(limit);
         sendResponse(res, constants.RESPONSE_SUCCESS, "done", users, []);
     }catch(error){
         sendResponse(res,constants.RESPONSE_INT_SERVER_ERROR,error.message,{},constants.UNHANDLED_ERROR);
@@ -30,10 +31,10 @@ const userData = async (req, res, next)=>{
 const sendFriendRequest = async (req, res, next)=>{
     try{
         const {userId} = req.user
-        const {requestedFriendId} = req.body
+        const {requestId} = req.body
         const user = await userModel.findOne({userId});
-        const requestedFriend = await userModel.findOne({userId:requestedFriendId});
-        const isFriends = user.friends.find((friend)=> friend.userId===requestedFriendId)
+        const requestedFriend = await userModel.findOne({userId:requestId});
+        const isFriends = user.friends.find((friend)=> friend.userId===requestId)
         const isHaveRequest = requestedFriend.friendsRequests.find(request=> request.userId === userId)
         if(isFriends){
             return sendResponse(res, constants.RESPONSE_SUCCESS, "you are friens already", {}, []);

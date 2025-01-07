@@ -72,9 +72,9 @@ const userDetailsQuery = (userId)=>{
             $project: {
                 userDetails:{$arrayElemAt:["$userDetails",0]},
                 friendsDetails:{$arrayElemAt:["$friends.friends",0]},
-                friendsCount:{$size:{$arrayElemAt:["$friends.friends",0]}},
+                friendsCount: { $size: { $ifNull: ["$friends.friends", []] } },
                 friendsRequestsDetails:{$arrayElemAt:["$friendsRequests.friendsRequests",0]},
-                friendsRequestsCount:{$size:{$arrayElemAt:["$friendsRequests.friendsRequests",0]}}
+                friendsRequestsCount: { $size: { $ifNull: ["$friendsRequests.friendsRequests", []] } }
             }
         }
     ]
