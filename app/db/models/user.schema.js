@@ -45,12 +45,7 @@ const userSchema=new mongoose.Schema({
         addedAt: { type: Date, default: Date.now },
     }],
     friendsRequests:[{
-        userId:{ type: String, ref: 'User' },
-        requestedAt: { type: Date, default: Date.now },
-    }],
-    requestedFriends:[{
-        userId:{ type: String, ref: 'User' },
-        requestedAt: { type: Date, default: Date.now },
+        requestId:{ type: String, ref: 'FriendRequest' },
     }],
     groubs:[String]
 },{

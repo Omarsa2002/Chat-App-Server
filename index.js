@@ -18,7 +18,13 @@ const helmet  =require("helmet")
 const { connectiondb } = require('./app/db/connectiondb.js');
 const { addAdmin } = require('./app/utils/admin.js');
 const { limit } = require('./app/utils/util.service.js');
+const {Server} = require('socket.io');
+const socketHandlers = require('./app/socketHandlers/socketHandlers.js')
 globalThis.fetch = fetch;
+
+//socket.io
+const {createServer} = require('http')
+const server = createServer(app);
 
 // require('./app/utils/passport-config.js')(passport);
 //app.use(i18n.init);
@@ -51,6 +57,13 @@ app.use(cors({
     origin: CONFIG.CLINT_ORIGIN,
     credentials: true,
 }));
+const io = new Server(server,{
+  cors: {
+    origin: CONFIG.CLINT_ORIGIN,
+    methods: ["GET", "POST", "PATCH"],
+    credentials: true
+  }
+});
 app.use(helmet())
 
 
@@ -122,8 +135,14 @@ app.use(function(err, req, res, next) {
   });
 });
 
+
+
+//socket------------------------------------------------------
+socketHandlers(io)
+
+
 // module.exports = app;
-app.listen(CONFIG.port, err => {
+server.listen(CONFIG.port, err => {
   if (err) {
     return console.log('something bad happened', err);
   }

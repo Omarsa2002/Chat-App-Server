@@ -1,4 +1,5 @@
 const userModel = require("../db/models/user.schema.js");
+const friendRequestModel = require('../db/models/friendRequest.schema.js');
 const { sendResponse, randomNumber, currentDate, validateExpiry, paginationWrapper} = require("../utils/util.service.js");
 const constants=require("../utils/constants.js")
 const CONFIG = require('../../config/config.js');
@@ -17,7 +18,6 @@ const users = async (req, res, next)=>{
     }
 }
 
-
 const userData = async (req, res, next)=>{
     try{
         const {userId} = req.user
@@ -35,18 +35,24 @@ const sendFriendRequest = async (req, res, next)=>{
         const user = await userModel.findOne({userId});
         const requestedFriend = await userModel.findOne({userId:requestId});
         const isFriends = user.friends.find((friend)=> friend.userId===requestId)
-        const isHaveRequest = requestedFriend.friendsRequests.find(request=> request.userId === userId)
         if(isFriends){
             return sendResponse(res, constants.RESPONSE_CONFLICT, "you are friens already", {}, []);
         }
+        const isHaveRequest = await friendRequestModel.findOne({$or:[{from: userId, to:requestId},{from:requestId, to: userId}]});
         if(isHaveRequest){
-            return sendResponse(res, constants.RESPONSE_CONFLICT, "you are already sent a friend request to this person", {}, []);
+            return sendResponse(res, constants.RESPONSE_CONFLICT, "you are already (sent/have) a friend request (to/from) this person", {}, []);
         }
-        requestedFriend.friendsRequests.push({ userId, requestedAt: currentDate() })
-        user.requestedFriends.push({userId:requestId, requestedAt: currentDate()})
+        const newFriendRequest = new friendRequestModel({
+            from: userId,
+            to: requestId,
+            createdAt: currentDate()
+        })
+        await newFriendRequest.save();
+        requestedFriend.friendsRequests.push({ requestId:newFriendRequest.requestId })
+        user.friendsRequests.push({ requestId:newFriendRequest.requestId })
         await requestedFriend.save()
         await user.save()
-        sendResponse(res, constants.RESPONSE_SUCCESS, "done", {}, []);
+        sendResponse(res, constants.RESPONSE_SUCCESS, "done", newFriendRequest.requestId, []);
     }catch(error){
         sendResponse(res,constants.RESPONSE_INT_SERVER_ERROR,error.message,{},constants.UNHANDLED_ERROR);
     }
@@ -62,14 +68,14 @@ const acceptFriendRequest = async (req, res, next)=>{
         if (isAlreadyFriends) {
             return sendResponse(res,constants.RESPONSE_CONFLICT,"You are already friends with this user",{},{});
         }
+        const friendRequest = await friendRequestModel.findOne({from: friendId, to: userId})
         // Check if there is a friend request
-        const hasFriendRequest = user.friendsRequests.some(request => request.userId === friendId);
-        if (!hasFriendRequest) {
+        if (!friendRequest) {
             return sendResponse(res,constants.RESPONSE_NOT_FOUND,"No friend request found from this user",{},{});
         }
         const pullRequestResult = await userModel.updateOne(
             { userId },
-            { $pull: { friendsRequests: { userId: friendId } } }
+            { $pull: { friendsRequests: { requestId: friendRequest.requestId } } }
         );
         const pushFriendResult = await userModel.updateOne(
             { userId },
@@ -77,7 +83,7 @@ const acceptFriendRequest = async (req, res, next)=>{
         );
         const pullRequestedResult = await userModel.updateOne(
             { userId: friendId },
-            { $pull: { requestedFriends: { userId } } }
+            { $pull: { friendsRequests: { requestId: friendRequest.requestId } } }
         );
         const pushCurrentUserResult = await userModel.updateOne(
             { userId: friendId },
@@ -89,6 +95,7 @@ const acceptFriendRequest = async (req, res, next)=>{
             pullRequestedResult.modifiedCount &&
             pushCurrentUserResult.modifiedCount
         ) {
+            await friendRequestModel.deleteOne({requestId: friendRequest.requestId});
             return sendResponse(res, constants.RESPONSE_SUCCESS, "done", {}, {});
         }
         sendResponse(res, constants.RESPONSE_CONFLICT, "Failed to accept friend request", {}, {});
@@ -101,17 +108,22 @@ const cancelFriendRequest = async (req, res, next)=>{
     try{
         const { userId } = req.user;
         const { requestId } = req.body;
+        const friendRequest = await friendRequestModel.findOne({from: userId, to: requestId})
+        if(!friendRequest){
+            return sendResponse(res,constants.RESPONSE_NOT_FOUND,"No friend request found to this user",{},{});
+        }
         const result = await userModel.updateOne(
             { userId: requestId },
-            { $pull: { friendsRequests: { userId: userId } } }
+            { $pull: { friendsRequests: { requestId:friendRequest.requestId } } }
         );
         const result2 = await userModel.updateOne(
             { userId },
-            { $pull: { requestedFriends: { userId: requestId } } }
+            { $pull: { friendsRequests: { requestId:friendRequest.requestId } } }
         );
         if (result.modifiedCount === 0 && result2.modifiedCount === 0) {
             return sendResponse(res, constants.RESPONSE_NOT_FOUND, "Request not found", {},[]);
         }
+        await friendRequestModel.deleteOne({requestId: friendRequest.requestId});
         sendResponse(res, constants.RESPONSE_SUCCESS, "Friend request canceled successfully", {}, []);
     }catch(error){
         sendResponse(res,constants.RESPONSE_INT_SERVER_ERROR,error.message,{},constants.UNHANDLED_ERROR);
@@ -121,17 +133,22 @@ const refuseFriendRequest = async (req, res, next)=>{
     try{
         const { requestId } = req.body;
         const { userId } = req.user;
+        const friendRequest = await friendRequestModel.findOne({from: requestId, to: userId})
+        if(!friendRequest){
+            return sendResponse(res,constants.RESPONSE_NOT_FOUND,"No friend request found from this user",{},{});
+        }
         const result = await userModel.updateOne(
             { userId },
-            { $pull: { friendsRequests: { userId: requestId } } }
+            { $pull: { friendsRequests: { requestId: friendRequest.requestId } } }
         );
         const result2 = await userModel.updateOne(
             { userId: requestId },
-            { $pull: { requestedFriends: { userId } } }
+            { $pull: { friendsRequests: { requestId: friendRequest.requestId } } }
         );
         if (result.modifiedCount === 0 && result2.modifiedCount === 0) {
             return sendResponse(res, constants.RESPONSE_NOT_FOUND, "Request not found", {},[]);
         }
+        await friendRequestModel.deleteOne({requestId: friendRequest.requestId});
         sendResponse(res, constants.RESPONSE_SUCCESS, "Friend request canceled successfully", {}, []);
     }catch(error){
         sendResponse(res,constants.RESPONSE_INT_SERVER_ERROR,error.message,{},constants.UNHANDLED_ERROR);

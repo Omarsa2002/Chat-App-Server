@@ -3,7 +3,7 @@ const userDetailsQuery = (userId)=>{
         {
             $match: {
                 userId: userId
-            }, 
+            }
         },
         {
             $facet: {
@@ -11,17 +11,16 @@ const userDetailsQuery = (userId)=>{
                     {
                         $project: {
                             _id: 0,
-                            userId:1,
+                            userId: 1,
                             userName: 1,
                             email: 1,
                             phone: 1,
-                            isOnline:1,
-                            role: 1,
-                        },
-                    },
+                            role: 1
+                        }
+                    }
                 ],
-                friends:[
-                    {$unwind:"$friends"},
+                friends: [
+                    { $unwind: "$friends" },
                     {
                         $lookup: {
                             from: "users",
@@ -32,74 +31,106 @@ const userDetailsQuery = (userId)=>{
                     },
                     { $unwind: "$friendDetails" },
                     {
-                        $group:{
-                            _id:null,
+                        $group: {
+                            _id: null,
                             friends: {
                                 $push: {
                                     friendId: "$friendDetails.userId",
-                                    friendName: "$friendDetails.userName",
-                                },
-                            },
-                        },
-                    },
+                                    friendName: "$friendDetails.userName"
+                                }
+                            }
+                        }
+                    }
                 ],
                 friendsRequests: [
                     { $unwind: "$friendsRequests" },
                     {
                         $lookup: {
-                            from: "users",
-                            localField: "friendsRequests.userId",
-                            foreignField: "userId",
-                            as: "requestDetails",
-                        },
+                            from: "friendrequests",
+                            localField: "friendsRequests.requestId",
+                            foreignField: "requestId",
+                            as: "friendRequestDetails"
+                        }
                     },
-                    { $unwind: "$requestDetails" },
+                    { $unwind: "$friendRequestDetails" },
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "friendRequestDetails.from",
+                            foreignField: "userId",
+                            as: "requesterDetails"
+                        }
+                    },
+                    { $unwind: "$requesterDetails" },
+                    {
+                        $match: {
+                            "requesterDetails.userId": { $ne: userId }
+                        }
+                    },
                     {
                         $group: {
                             _id: null,
                             friendsRequests: {
                                 $push: {
-                                    requestId: "$requestDetails.userId",
-                                    requestName: "$requestDetails.userName",
-                                },
-                            },
-                        },
-                    },
+                                    requestId: "$friendRequestDetails.requestId",
+                                    requesterId: "$requesterDetails.userId",
+                                    requesterName: "$requesterDetails.userName",
+                                    status: "$friendRequestDetails.status"
+                                }
+                            }
+                        }
+                    }
                 ],
-                requestedFriends:[
-                    { $unwind: "$requestedFriends" },
+                requestsFromMe: [
+                    { $unwind: "$friendsRequests" },
+                    {
+                        $lookup: {
+                            from: "friendrequests",
+                            localField: "friendsRequests.requestId",
+                            foreignField: "requestId",
+                            as: "requestFromMeDetails"
+                        }
+                    },
+                    { $unwind: "$requestFromMeDetails" },
                     {
                         $lookup: {
                             from: "users",
-                            localField: "requestedFriends.userId",
+                            localField: "requestFromMeDetails.to",
                             foreignField: "userId",
-                            as: "requestedFriendsDetails",
-                        },
+                            as: "toUserDetails"
+                        }
                     },
-                    { $unwind: "$requestedFriendsDetails" },
+                    { $unwind: "$toUserDetails" },
+                    {
+                        $match: {
+                            "requestFromMeDetails.from": userId
+                        }
+                    },
                     {
                         $group: {
                             _id: null,
-                            requestedFriends: {
+                            requestsFromMe: {
                                 $push: {
-                                    requestedId: "$requestedFriendsDetails.userId",
-                                    requestedName: "$requestedFriendsDetails.userName",
-                                },
-                            },
-                        },
-                    },
-                ],
+                                    requestId: "$requestFromMeDetails.requestId",
+                                    recipientId: "$toUserDetails.userId",
+                                    recipientName: "$toUserDetails.userName",
+                                    status: "$requestFromMeDetails.status"
+                                }
+                            }
+                        }
+                    }
+                ]
             }
         },
         {
             $project: {
-                userDetails:{$arrayElemAt:["$userDetails",0]},
-                friendsDetails:{$arrayElemAt:["$friends.friends",0]},
+                userDetails: { $arrayElemAt: ["$userDetails", 0] },
+                friends: { $arrayElemAt: ["$friends.friends", 0] },
                 friendsCount: { $size: { $ifNull: ["$friends.friends", []] } },
-                friendsRequestsDetails:{$arrayElemAt:["$friendsRequests.friendsRequests",0]},
+                friendsRequests: { $arrayElemAt: ["$friendsRequests.friendsRequests", 0] },
                 friendsRequestsCount: { $size: { $ifNull: ["$friendsRequests.friendsRequests", []] } },
-                requestedFriendsDetails:{$arrayElemAt:["$requestedFriends.requestedFriends",0]},
-                requestedFriendsCount: { $size: { $ifNull: ["$requestedFriends.requestedFriends", []] } }
+                requestsFromMe: { $arrayElemAt: ["$requestsFromMe.requestsFromMe", 0] },
+                requestsFromMeCont: { $size: { $ifNull: ["$requestsFromMe.requestsFromMe", []] } },
             }
         }
     ]
