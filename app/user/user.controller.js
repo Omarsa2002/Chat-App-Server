@@ -1,5 +1,6 @@
 const userModel = require("../db/models/user.schema.js");
 const friendRequestModel = require('../db/models/friendRequest.schema.js');
+const chatModel = require('../db/models/chat.schema.js')
 const { sendResponse, randomNumber, currentDate, validateExpiry, paginationWrapper} = require("../utils/util.service.js");
 const constants=require("../utils/constants.js")
 const CONFIG = require('../../config/config.js');
@@ -73,13 +74,16 @@ const acceptFriendRequest = async (req, res, next)=>{
         if (!friendRequest) {
             return sendResponse(res,constants.RESPONSE_NOT_FOUND,"No friend request found from this user",{},{});
         }
+        const newChat = new chatModel() 
+        await newChat.save();
+        console.log(newChat);
         const pullRequestResult = await userModel.updateOne(
             { userId },
             { $pull: { friendsRequests: { requestId: friendRequest.requestId } } }
         );
         const pushFriendResult = await userModel.updateOne(
             { userId },
-            { $push: { friends: { userId: friendId } } }
+            { $push: { friends: { userId: friendId, chatId: newChat.chatId } } }
         );
         const pullRequestedResult = await userModel.updateOne(
             { userId: friendId },
@@ -87,7 +91,7 @@ const acceptFriendRequest = async (req, res, next)=>{
         );
         const pushCurrentUserResult = await userModel.updateOne(
             { userId: friendId },
-            { $push: { friends: { userId } } }
+            { $push: { friends: { userId, chatId: newChat.chatId } } }
         );
         if (
             pullRequestResult.modifiedCount &&
@@ -158,6 +162,8 @@ const removeFriend = async (req, res, next)=>{
     try{
         const { friendId } = req.body;
         const { userId } = req.user;
+        const user = await userModel.findOne({userId});
+        const chat = user.friends.find((friend)=>friend.friendId === friendId)
         const result = await userModel.updateOne(
             {userId},
             { $pull: { friends: { userId: friendId } } }
@@ -169,6 +175,8 @@ const removeFriend = async (req, res, next)=>{
         if (result.modifiedCount === 0 && result2.modifiedCount === 0) {
             return sendResponse(res, constants.RESPONSE_NOT_FOUND, "Friend relationship not found", {},[]);
         }
+        if(chat)
+        await chatModel.deleteOne({chatId: chat.chatId});
         sendResponse(res, constants.RESPONSE_SUCCESS, "Friend  removed successfully",{}, []);
     }catch(error){
         sendResponse(res,constants.RESPONSE_INT_SERVER_ERROR,error.message,{},constants.UNHANDLED_ERROR);

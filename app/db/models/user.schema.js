@@ -42,6 +42,7 @@ const userSchema=new mongoose.Schema({
     },
     friends:[{
         userId:{ type: String, ref: 'User' },
+        chatId:{type:String},
         addedAt: { type: Date, default: Date.now },
     }],
     friendsRequests:[{

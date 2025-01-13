@@ -36,7 +36,8 @@ const userDetailsQuery = (userId)=>{
                             friends: {
                                 $push: {
                                     friendId: "$friendDetails.userId",
-                                    friendName: "$friendDetails.userName"
+                                    friendName: "$friendDetails.userName",
+                                    chatId: "$friends.chatId"
                                 }
                             }
                         }
