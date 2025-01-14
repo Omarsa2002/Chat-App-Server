@@ -37,7 +37,8 @@ const userDetailsQuery = (userId)=>{
                                 $push: {
                                     friendId: "$friendDetails.userId",
                                     friendName: "$friendDetails.userName",
-                                    chatId: "$friends.chatId"
+                                    chatId: "$friends.chatId",
+                                    isOnline:"$friendDetails.isOnline"
                                 }
                             }
                         }

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const addPrefixedIdPlugin = require("../db.helper.js");
+
 // Define the Message Schema
 const messageSchema = new mongoose.Schema({
     messageId: {
@@ -13,11 +13,13 @@ const messageSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    sentAt:{
+        type:Date,
+        default: Date.now()
+    }
 },{
     timestamps:true
 });
-
-messageSchema.plugin(addPrefixedIdPlugin, { prefix: 'Message', field: 'messageId' }); 
 
 // const messageModel= mongoose.model('Message', messageSchema);
 
