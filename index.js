@@ -53,9 +53,15 @@ console.log("Environment:", CONFIG.app)
 connectiondb()
 app.set("trust proxy", true);
 // CORS
+const wightlist = [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2]
 app.use(cors({
-    origin: (origin, callback)=>{console.log("origin------>",origin); return callback(null, true)},
-    credentials: true,
+  origin: (origin, callback)=>{
+    console.log("origin------>",origin); 
+    if (wightlist.includes(origin))
+      return callback(null, true)
+    return callback(new Error("not allowed origin"), null)
+  },
+  credentials: true,
 }));
 const io = new Server(server,{
   cors: {
