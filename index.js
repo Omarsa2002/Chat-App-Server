@@ -53,7 +53,7 @@ console.log("Environment:", CONFIG.app)
 connectiondb()
 app.set("trust proxy", true);
 // CORS
-const whitelist = [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2]
+const whitelist = [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2, CONFIG.CLINT_ORIGIN_3]
 app.use(cors({
   origin: (origin, callback)=>{
     console.log("origin------>",origin, whitelist, whitelist.includes(origin)); 
@@ -65,7 +65,12 @@ app.use(cors({
 }));
 const io = new Server(server,{
   cors: {
-    origin: [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2],
+    origin: (origin, callback)=>{
+      console.log("origin------>",origin, whitelist, whitelist.includes(origin)); 
+      if (whitelist.includes(origin))
+        return callback(null, true)
+      return callback(new Error("not allowed origin"), null)
+    },
     credentials: true
   }
 });
