@@ -66,7 +66,7 @@ app.use(cors({
 const io = new Server(server,{
   cors: {
     origin: (origin, callback)=>{
-      console.log("origin------>",origin, whitelist, whitelist.includes(origin)); 
+      console.log("origin from socket.io------>",origin, whitelist, whitelist.includes(origin)); 
       if (whitelist.includes(origin))
         return callback(null, true)
       return callback(new Error("not allowed origin"), null)
