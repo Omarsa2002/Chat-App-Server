@@ -54,13 +54,12 @@ connectiondb()
 
 // CORS
 app.use(cors({
-    origin: CONFIG.CLINT_ORIGIN,
+    origin: [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2],
     credentials: true,
 }));
 const io = new Server(server,{
   cors: {
-    origin: CONFIG.CLINT_ORIGIN,
-    methods: ["GET", "POST", "PATCH"],
+    origin: [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2],
     credentials: true
   }
 });
