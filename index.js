@@ -54,7 +54,7 @@ connectiondb()
 app.set("trust proxy", true);
 // CORS
 app.use(cors({
-    origin: [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2],
+    origin: (origin, callback)=>{console.log(origin); return callback(null, true)},
     credentials: true,
 }));
 const io = new Server(server,{
