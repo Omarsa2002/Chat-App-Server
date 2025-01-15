@@ -56,7 +56,7 @@ app.set("trust proxy", true);
 const wightlist = [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2]
 app.use(cors({
   origin: (origin, callback)=>{
-    console.log("origin------>",origin); 
+    console.log("origin------>",origin, wightlist, wightlist.includes(origin)); 
     if (wightlist.includes(origin))
       return callback(null, true)
     return callback(new Error("not allowed origin"), null)
