@@ -12,7 +12,7 @@ const setTokenWithCookies = (res, token)=>{
     const options = {
         httpOnly: true,    // Prevents JavaScript access
         secure: CONFIG.app === 'production', // Use HTTPS in production
-        sameSite: 'strict', // Prevents CSRF attacks
+        sameSite: 'none', // Prevents CSRF attacks
         maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
     }
     return res.cookie("jwtToken", token, options);

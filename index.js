@@ -51,17 +51,15 @@ console.log("Environment:", CONFIG.app)
 
 //Database connection
 connectiondb()
-
+app.set("trust proxy", true);
 // CORS
 app.use(cors({
-    //origin: [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2],
-    origin: '*',
+    origin: [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2],
     credentials: true,
 }));
 const io = new Server(server,{
   cors: {
-    //origin: [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2],
-    origin: '*',
+    origin: [CONFIG.CLINT_ORIGIN, CONFIG.CLINT_ORIGIN_2],
     credentials: true
   }
 });
