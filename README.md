@@ -88,9 +88,19 @@ MONGODB_URI=your_mongo_uri
 JWT_SECRET=your_jwt_secret
 ```
 
-## 🚀 Deployment
+## 📁 Project Structure
 
-This server can be deployed to Vercel using the included `vercel.json` configuration.
+```
+├── public/         # Static assets
+├── src/
+│   ├── App.jsx     # Main application file
+│   ├── App.css     # Styles
+│   └── ...         # Other components
+├── package.json
+├── vite.config.js
+└── index.html
+```
+
 
 ## 📄 License
 
