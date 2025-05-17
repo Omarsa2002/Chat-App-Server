@@ -4,7 +4,6 @@ const addPrefixedIdPlugin = require("../db.helper.js");
 
 const chatSchema = new mongoose.Schema({
     chatId: {type:String, require: true},
-    //friendsId: { type: String, required: true },
     messages: { type: [messageSchema], default: [] },
 },{
     toJSON: { virtuals: true,versionKey:false },

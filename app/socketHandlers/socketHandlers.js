@@ -5,6 +5,8 @@ const cancelFriendHandler = require('./Handlers/userHandler/cancelFriend.handler
 const removeFriendHandler = require('./Handlers/userHandler/removeFriend.handler')
 //--------------------------------------------------------------------------------
 const sendMessageToFriend = require('./Handlers/chatHandler/sendMessageToFriend.handler')
+const groupChatHandler = require('./Handlers/chatHandler/groupChat.handler');
+
 const userModel = require('../db/models/user.schema')
 module.exports = (io) => {
     const userSockets = {}
@@ -30,6 +32,7 @@ module.exports = (io) => {
             removeFriendHandler(client, thisClient, findRecipientSocket);
             //-----------------------------------------------------
             sendMessageToFriend(client, thisClient, findRecipientSocket);
+            groupChatHandler(client, thisClient, findRecipientSocket, io);
             // ----------------------------------------------------
             client.on('disconnect', async (reason) => {
                 try {
@@ -46,6 +49,8 @@ module.exports = (io) => {
                     client.removeAllListeners('cancelFriendRequest');
                     client.removeAllListeners('refuseFriendRequest');
                     client.removeAllListeners('removeFriend');
+                    client.removeAllListeners('createGroup');
+                    client.removeAllListeners('sendGroupMessage');
                 } catch (err) {
                     console.error('Error updating user status on disconnect:', err);
                 }

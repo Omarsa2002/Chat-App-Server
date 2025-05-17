@@ -153,7 +153,7 @@ const login = async (req, res, next)=>{
             });
             await newToken.save();
         }
-        setTokenWithCookies(res, accToken);
+        setTokenWithCookies(req, res, accToken);
         const data = {
             token: accToken,
             userId: userId,
