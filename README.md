@@ -97,7 +97,7 @@ JWT_SECRET=your_jwt_secret
 │   ├── schema-index.js
 │   ├── auth/
 │   │   ├── auth.controller.js
-│   │   ├── admin.route.js
+│   │   ├── auth.route.js
 |   |   ├── auth.validation.js
 │   │   └── ...
 │   └── ...
