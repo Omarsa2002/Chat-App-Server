@@ -95,10 +95,11 @@ JWT_SECRET=your_jwt_secret
 ├── app/
 │   ├── routes-index.js
 │   ├── schema-index.js
-│   ├── admin/
-│   │   ├── admin.controller.js
+│   ├── auth/
+│   │   ├── auth.controller.js
 │   │   ├── admin.route.js
-│   │   └── admin.validation.js
+|   |   ├── auth.validation.js
+│   │   └── ...
 │   └── ...
 ├── vercel.json               # Deployment config for Vercel
 ├── package.json
