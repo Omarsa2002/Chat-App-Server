@@ -91,14 +91,17 @@ JWT_SECRET=your_jwt_secret
 ## 📁 Project Structure
 
 ```
-├── public/         # Static assets
-├── src/
-│   ├── App.jsx     # Main application file
-│   ├── App.css     # Styles
-│   └── ...         # Other components
+├── index.js                  # Entry point
+├── app/
+│   ├── routes-index.js
+│   ├── schema-index.js
+│   ├── admin/
+│   │   ├── admin.controller.js
+│   │   ├── admin.route.js
+│   │   └── admin.validation.js
+│   └── ...
+├── vercel.json               # Deployment config for Vercel
 ├── package.json
-├── vite.config.js
-└── index.html
 ```
 
 
